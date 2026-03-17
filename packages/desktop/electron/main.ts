@@ -5,7 +5,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import { fileURLToPath } from "node:url";
-import { formatSkillsForPrompt, loadAllSkills, readSkillContent } from "./skills.js";
+import { createSkill, formatSkillsForPrompt, loadAllSkills, readSkillContent } from "./skills.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -96,6 +96,10 @@ ipcMain.handle("skills:read", (_event, filePath: string) => {
 ipcMain.handle("skills:format-prompt", (_event, extraDirs?: string[]) => {
 	const skills = loadAllSkills(extraDirs);
 	return formatSkillsForPrompt(skills);
+});
+
+ipcMain.handle("skills:create", (_event, name: string, description: string, content: string) => {
+	return createSkill(name, description, content);
 });
 
 ipcMain.handle("skills:select-dir", async (event) => {

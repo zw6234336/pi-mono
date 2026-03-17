@@ -166,6 +166,30 @@ export function loadAllSkills(extraDirs?: string[]): SkillInfo[] {
 }
 
 /**
+ * Create or overwrite a skill file.
+ * Writes to ~/.pi/agent/skills/<name>/SKILL.md (or the PI_CODING_AGENT_DIR equivalent).
+ * Returns the absolute path of the written file.
+ */
+export function createSkill(name: string, description: string, content: string): string {
+	if (!isValidName(name)) {
+		throw new Error(`Invalid skill name "${name}". Use only lowercase letters, digits, and hyphens.`);
+	}
+	if (!description.trim()) {
+		throw new Error("Skill description must not be empty.");
+	}
+	if (description.length > MAX_DESCRIPTION_LENGTH) {
+		throw new Error(`Skill description exceeds ${MAX_DESCRIPTION_LENGTH} characters.`);
+	}
+	const agentDir = getAgentDir();
+	const skillDir = path.join(agentDir, "skills", name);
+	fs.mkdirSync(skillDir, { recursive: true });
+	const filePath = path.join(skillDir, "SKILL.md");
+	const frontmatter = `---\nname: ${name}\ndescription: "${description.replace(/"/g, '\\"')}"\n---\n\n`;
+	fs.writeFileSync(filePath, frontmatter + content, "utf-8");
+	return filePath;
+}
+
+/**
  * Read a skill file's full content by path.
  */
 export function readSkillContent(filePath: string): string | null {

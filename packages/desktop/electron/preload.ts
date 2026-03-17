@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		read: (filePath: string) => ipcRenderer.invoke("skills:read", filePath),
 		formatPrompt: (extraDirs?: string[]) => ipcRenderer.invoke("skills:format-prompt", extraDirs),
 		selectDir: () => ipcRenderer.invoke("skills:select-dir"),
+		create: (name: string, description: string, content: string): Promise<string> =>
+			ipcRenderer.invoke("skills:create", name, description, content),
 	},
 	system: {
 		info: (): Promise<{

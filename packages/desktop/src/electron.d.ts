@@ -31,6 +31,7 @@ interface ElectronAPI {
 		read: (filePath: string) => Promise<string | null>;
 		formatPrompt: (extraDirs?: string[]) => Promise<string>;
 		selectDir: () => Promise<string | null>;
+		create: (name: string, description: string, content: string) => Promise<string>;
 	};
 	shell: {
 		exec: (command: string, cwd: string) => Promise<string>;

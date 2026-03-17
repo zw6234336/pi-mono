@@ -27,6 +27,7 @@ import { Button } from "@mariozechner/mini-lit/dist/Button.js";
 import { Input } from "@mariozechner/mini-lit/dist/Input.js";
 import "./SkillsDialog.js";
 import { createShellExecTool } from "./shellTool.js";
+import { createSkillTool } from "./skillTool.js";
 
 // Create stores
 const settings = new SettingsStore();
@@ -247,7 +248,13 @@ const createAgent = async (initialState?: Partial<AgentState>) => {
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
 			const shellTool = createShellExecTool(systemInfo?.homeDir ?? "/tmp");
-			return [replTool, shellTool];
+			const skillTool = createSkillTool(async () => {
+				await loadSkillsFromDisk();
+				if (agent) {
+					agent.setSystemPrompt(buildSystemPrompt());
+				}
+			});
+			return [replTool, shellTool, skillTool];
 		},
 	});
 };
