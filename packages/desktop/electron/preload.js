@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		load: (extraDirs) => ipcRenderer.invoke("skills:load", extraDirs),
 		read: (filePath) => ipcRenderer.invoke("skills:read", filePath),
 		formatPrompt: (extraDirs) => ipcRenderer.invoke("skills:format-prompt", extraDirs),
+		selectDir: () => ipcRenderer.invoke("skills:select-dir"),
 	},
 });

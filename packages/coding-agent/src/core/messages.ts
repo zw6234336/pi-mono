@@ -185,14 +185,14 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 				case "assistant":
 				case "toolResult":
 					return m;
-				case "user-with-attachments":
-				case "artifact":
-					// Custom UI message types from web-ui - not applicable in coding-agent context
+				default: {
+					// Handle extension message types from web-ui (e.g. user-with-attachments, artifact)
+					// that are not part of the pi-agent-core AgentMessage union.
+					const role = (m as { role: string }).role;
+					if (role === "user-with-attachments" || role === "artifact") return undefined;
+					const _exhaustiveCheck: never = m as never;
 					return undefined;
-				default:
-					// biome-ignore lint/correctness/noSwitchDeclarations: fine
-					const _exhaustiveCheck: never = m;
-					return undefined;
+				}
 			}
 		})
 		.filter((m) => m !== undefined);

@@ -2499,12 +2499,12 @@ export class InteractiveMode {
 				// Tool results are rendered inline with tool calls, handled separately
 				break;
 			}
-			case "user-with-attachments":
-			case "artifact":
-				// Custom UI message types from web-ui - not rendered by coding-agent
-				break;
 			default: {
-				const _exhaustive: never = message;
+				// Handle extension message types from web-ui (e.g. user-with-attachments, artifact)
+				// that are not part of the pi-agent-core AgentMessage union.
+				const role = (message as { role: string }).role;
+				if (role === "user-with-attachments" || role === "artifact") break;
+				const _exhaustive: never = message as never;
 			}
 		}
 	}

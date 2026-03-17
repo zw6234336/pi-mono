@@ -25,6 +25,7 @@ import "./app.css";
 import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
 import { Input } from "@mariozechner/mini-lit/dist/Input.js";
+import "./SkillsDialog.js";
 
 // Create stores
 const settings = new SettingsStore();
@@ -66,12 +67,24 @@ let chatPanel: ChatPanel;
 let agentUnsubscribe: (() => void) | undefined;
 let skillsPromptBlock = "";
 let loadedSkills: SkillInfo[] = [];
+let extraSkillDirs: string[] = [];
+
+async function loadExtraSkillDirs(): Promise<void> {
+	const saved = await window.electronAPI?.config.get("skillDirs");
+	if (Array.isArray(saved)) {
+		extraSkillDirs = saved as string[];
+	}
+}
+
+async function saveExtraSkillDirs(): Promise<void> {
+	await window.electronAPI?.config.set("skillDirs", extraSkillDirs);
+}
 
 async function loadSkillsFromDisk(): Promise<void> {
 	if (!window.electronAPI?.skills) return;
 	try {
-		loadedSkills = await window.electronAPI.skills.load();
-		skillsPromptBlock = await window.electronAPI.skills.formatPrompt();
+		loadedSkills = await window.electronAPI.skills.load(extraSkillDirs);
+		skillsPromptBlock = await window.electronAPI.skills.formatPrompt(extraSkillDirs);
 	} catch (err) {
 		console.error("Failed to load skills:", err);
 	}
@@ -243,6 +256,27 @@ const openSettings = () => {
 	SettingsDialog.open([new ProvidersModelsTab(), new ApiKeysTab(), new ProxyTab()]);
 };
 
+const openSkillsDialog = async () => {
+	const { SkillsDialog } = await import("./SkillsDialog.js");
+	await SkillsDialog.open(
+		loadedSkills,
+		extraSkillDirs,
+		async (dirs) => {
+			extraSkillDirs = dirs;
+			await saveExtraSkillDirs();
+			await loadSkillsFromDisk();
+			if (agent) {
+				agent.setSystemPrompt(buildSystemPrompt());
+			}
+			renderApp();
+		},
+		(dirs) => {
+			extraSkillDirs = dirs;
+		},
+	);
+	renderApp();
+};
+
 // ============================================================================
 // RENDER
 // ============================================================================
@@ -337,10 +371,20 @@ const renderApp = () => {
 				<div class="titlebar-no-drag flex items-center gap-1 px-2">
 					${
 						loadedSkills.length > 0
-							? html`<span class="text-xs text-muted-foreground flex items-center gap-1 px-2">
+							? html`<button
+							class="text-xs text-muted-foreground flex items-center gap-1 px-2 hover:text-foreground transition-colors"
+							@click=${openSkillsDialog}
+							title="Manage Skills"
+						>
 							${icon(BookOpen, "xs")} ${loadedSkills.length} skill${loadedSkills.length > 1 ? "s" : ""}
-						</span>`
-							: ""
+						</button>`
+							: html`<button
+							class="text-xs text-muted-foreground flex items-center gap-1 px-2 hover:text-foreground transition-colors"
+							@click=${openSkillsDialog}
+							title="Manage Skills"
+						>
+							${icon(BookOpen, "xs")} Skills
+						</button>`
 					}
 					${Button({
 						variant: "ghost",
@@ -390,7 +434,8 @@ async function initApp() {
 		app,
 	);
 
-	// Load skills from ~/.pi/agent/skills/
+	// Load persisted extra skill directories, then skills
+	await loadExtraSkillDirs();
 	await loadSkillsFromDisk();
 
 	chatPanel = new ChatPanel();

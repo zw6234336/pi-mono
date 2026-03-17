@@ -214,39 +214,3 @@ export function formatSkillsForPrompt(skills: SkillInfo[]): string {
 
 	return lines.join("\n");
 }
-
-/**
- * Format skills as XML block for system prompt injection.
- * Only includes name, description, and location — the model uses
- * the read tool to load the full content when needed.
- */
-export function formatSkillsForPrompt(skills: SkillInfo[]): string {
-	if (skills.length === 0) return "";
-
-	const lines = [
-		"\n\nThe following skills provide specialized instructions for specific tasks.",
-		"When the user's task matches a skill description, read the skill file to get detailed instructions.",
-		"",
-		"<available_skills>",
-	];
-
-	for (const skill of skills) {
-		lines.push("  <skill>");
-		lines.push(`    <name>${escapeXml(skill.name)}</name>`);
-		lines.push(`    <description>${escapeXml(skill.description)}</description>`);
-		lines.push(`    <location>${escapeXml(skill.filePath)}</location>`);
-		lines.push("  </skill>");
-	}
-
-	lines.push("</available_skills>");
-	return lines.join("\n");
-}
-
-function escapeXml(str: string): string {
-	return str
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&apos;");
-}

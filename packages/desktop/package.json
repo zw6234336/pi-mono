@@ -1,6 +1,6 @@
 {
 	"name": "pi-desktop",
-	"version": "0.0.1",
+	"version": "0.0.3245",
 	"private": true,
 	"description": "Pi AI Desktop - macOS desktop app for AI chat",
 	"author": "Pi Desktop",
@@ -12,7 +12,8 @@
 		"build": "vite build && npm run build:electron",
 		"build:electron": "tsc -p tsconfig.electron.json && node scripts/rename-to-mjs.cjs && cp electron/preload.js dist-electron/preload.js",
 		"preview": "vite preview",
-		"package": "npm run build && electron-builder --mac",
+		"package": "node scripts/auto-version.cjs && npm run build:coding-agent && npm run build && electron-builder --mac",
+		"build:coding-agent": "cd ../coding-agent && npm run build",
 		"clean": "shx rm -rf dist dist-electron release"
 	},
 	"dependencies": {
@@ -35,8 +36,13 @@
 		"productName": "Pi Desktop",
 		"electronDist": "../../node_modules/electron/dist",
 		"mac": {
-			"target": ["dmg"],
-			"category": "public.app-category.developer-tools"
+			"target": [
+				"dmg"
+			],
+			"category": "public.app-category.developer-tools",
+			"hardenedRuntime": true,
+			"entitlements": "entitlements.mac.plist",
+			"entitlementsInherit": "entitlements.mac.plist"
 		},
 		"directories": {
 			"output": "release"
@@ -45,6 +51,13 @@
 			"dist/**/*",
 			"dist-electron/**/*",
 			"!node_modules/electron/**/*"
+		],
+		"extraResources": [
+			{
+				"from": "../coding-agent/dist",
+				"to": "coding-agent/dist",
+				"filter": ["**/*"]
+			}
 		]
 	}
 }
