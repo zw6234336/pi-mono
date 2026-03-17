@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ES2022",
+		"moduleResolution": "bundler",
+		"outDir": "dist-electron",
+		"strict": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["electron/main.ts", "electron/skills.ts"]
+}

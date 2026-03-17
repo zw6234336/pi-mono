@@ -1,0 +1,10 @@
+@import "../../web-ui/dist/app.css";
+
+/* macOS title bar drag region */
+.titlebar-drag {
+	-webkit-app-region: drag;
+}
+
+.titlebar-no-drag {
+	-webkit-app-region: no-drag;
+}
