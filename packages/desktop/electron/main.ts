@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from "electron";
 import * as child_process from "node:child_process";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import { fileURLToPath } from "node:url";
@@ -145,6 +146,21 @@ ipcMain.handle("shell:exec", (event, command: string, cwd: string) => {
 	});
 
 	return execId;
+});
+
+// IPC handler for local system information (exposed to renderer for system prompt)
+ipcMain.handle("system:info", () => {
+	return {
+		homeDir: os.homedir(),
+		username: os.userInfo().username,
+		hostname: os.hostname(),
+		platform: process.platform,
+		arch: process.arch,
+		desktopDir: app.getPath("desktop"),
+		documentsDir: app.getPath("documents"),
+		downloadsDir: app.getPath("downloads"),
+		tempDir: app.getPath("temp"),
+	};
 });
 
 // IPC handler for selecting a workspace directory

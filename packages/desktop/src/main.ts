@@ -68,6 +68,15 @@ let agentUnsubscribe: (() => void) | undefined;
 let skillsPromptBlock = "";
 let loadedSkills: SkillInfo[] = [];
 let extraSkillDirs: string[] = [];
+let systemInfo: SystemInfo | null = null;
+
+async function loadSystemInfo(): Promise<void> {
+	try {
+		systemInfo = (await window.electronAPI?.system.info()) ?? null;
+	} catch (err) {
+		console.error("Failed to load system info:", err);
+	}
+}
 
 async function loadExtraSkillDirs(): Promise<void> {
 	const saved = await window.electronAPI?.config.get("skillDirs");
@@ -91,7 +100,24 @@ async function loadSkillsFromDisk(): Promise<void> {
 }
 
 function buildSystemPrompt(): string {
-	const base = "You are a helpful AI assistant.";
+	const lines: string[] = ["You are a helpful AI assistant running inside Pi Desktop, a native macOS application."];
+
+	if (systemInfo) {
+		lines.push(
+			"",
+			"## Local System",
+			`- User: ${systemInfo.username}`,
+			`- Hostname: ${systemInfo.hostname}`,
+			`- Platform: ${systemInfo.platform} (${systemInfo.arch})`,
+			`- Home directory: ${systemInfo.homeDir}`,
+			`- Desktop: ${systemInfo.desktopDir}`,
+			`- Documents: ${systemInfo.documentsDir}`,
+			`- Downloads: ${systemInfo.downloadsDir}`,
+			`- Temp: ${systemInfo.tempDir}`,
+		);
+	}
+
+	const base = lines.join("\n");
 	return skillsPromptBlock ? `${base}${skillsPromptBlock}` : base;
 }
 
@@ -435,6 +461,7 @@ async function initApp() {
 	);
 
 	// Load persisted extra skill directories, then skills
+	await loadSystemInfo();
 	await loadExtraSkillDirs();
 	await loadSkillsFromDisk();
 

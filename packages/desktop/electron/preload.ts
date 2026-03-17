@@ -12,6 +12,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		formatPrompt: (extraDirs?: string[]) => ipcRenderer.invoke("skills:format-prompt", extraDirs),
 		selectDir: () => ipcRenderer.invoke("skills:select-dir"),
 	},
+	system: {
+		info: (): Promise<{
+			homeDir: string;
+			username: string;
+			hostname: string;
+			platform: string;
+			arch: string;
+			desktopDir: string;
+			documentsDir: string;
+			downloadsDir: string;
+			tempDir: string;
+		}> => ipcRenderer.invoke("system:info"),
+	},
 	shell: {
 		// Execute a shell command in the given cwd. Returns an execId.
 		// Listen for "shell:data" and "shell:exit" events via onData / onExit.

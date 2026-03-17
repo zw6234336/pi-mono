@@ -1,6 +1,6 @@
 {
 	"name": "pi-desktop",
-	"version": "0.0.3245",
+	"version": "0.0.3247",
 	"private": true,
 	"description": "Pi AI Desktop - macOS desktop app for AI chat",
 	"author": "Pi Desktop",
@@ -56,7 +56,9 @@
 			{
 				"from": "../coding-agent/dist",
 				"to": "coding-agent/dist",
-				"filter": ["**/*"]
+				"filter": [
+					"**/*"
+				]
 			}
 		]
 	}

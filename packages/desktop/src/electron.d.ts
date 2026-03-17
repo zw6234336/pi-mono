@@ -5,11 +5,26 @@ interface SkillInfo {
 	content: string;
 }
 
+interface SystemInfo {
+	homeDir: string;
+	username: string;
+	hostname: string;
+	platform: string;
+	arch: string;
+	desktopDir: string;
+	documentsDir: string;
+	downloadsDir: string;
+	tempDir: string;
+}
+
 interface ElectronAPI {
 	config: {
 		get: (key: string) => Promise<unknown>;
 		set: (key: string, value: unknown) => Promise<void>;
 		delete: (key: string) => Promise<void>;
+	};
+	system: {
+		info: () => Promise<SystemInfo>;
 	};
 	skills: {
 		load: (extraDirs?: string[]) => Promise<SkillInfo[]>;
