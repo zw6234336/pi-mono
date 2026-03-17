@@ -185,6 +185,10 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 				case "assistant":
 				case "toolResult":
 					return m;
+				case "user-with-attachments":
+				case "artifact":
+					// Custom UI message types from web-ui - not applicable in coding-agent context
+					return undefined;
 				default:
 					// biome-ignore lint/correctness/noSwitchDeclarations: fine
 					const _exhaustiveCheck: never = m;

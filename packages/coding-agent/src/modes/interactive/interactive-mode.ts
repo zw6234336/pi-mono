@@ -2499,6 +2499,10 @@ export class InteractiveMode {
 				// Tool results are rendered inline with tool calls, handled separately
 				break;
 			}
+			case "user-with-attachments":
+			case "artifact":
+				// Custom UI message types from web-ui - not rendered by coding-agent
+				break;
 			default: {
 				const _exhaustive: never = message;
 			}
