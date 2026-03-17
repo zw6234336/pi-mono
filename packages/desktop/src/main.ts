@@ -26,6 +26,7 @@ import { icon } from "@mariozechner/mini-lit";
 import { Button } from "@mariozechner/mini-lit/dist/Button.js";
 import { Input } from "@mariozechner/mini-lit/dist/Input.js";
 import "./SkillsDialog.js";
+import { createShellExecTool } from "./shellTool.js";
 
 // Create stores
 const settings = new SettingsStore();
@@ -100,7 +101,10 @@ async function loadSkillsFromDisk(): Promise<void> {
 }
 
 function buildSystemPrompt(): string {
-	const lines: string[] = ["You are a helpful AI assistant running inside Pi Desktop, a native macOS application."];
+	const lines: string[] = [
+		"You are a helpful AI assistant running inside Pi Desktop, a native macOS application.",
+		"You have full access to the local macOS filesystem and can run shell commands via the shell_exec tool.",
+	];
 
 	if (systemInfo) {
 		lines.push(
@@ -242,7 +246,8 @@ const createAgent = async (initialState?: Partial<AgentState>) => {
 		toolsFactory: (_agent, _agentInterface, _artifactsPanel, runtimeProvidersFactory) => {
 			const replTool = createJavaScriptReplTool();
 			replTool.runtimeProvidersFactory = runtimeProvidersFactory;
-			return [replTool];
+			const shellTool = createShellExecTool(systemInfo?.homeDir ?? "/tmp");
+			return [replTool, shellTool];
 		},
 	});
 };
