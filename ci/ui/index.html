@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PI‑Mono CI 配置</title>
+  <style>
+    body {font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; padding: 1rem;}
+    label {display:block; margin-top:1rem;}
+    input, textarea {width:100%; padding:0.4rem; margin-top:0.3rem;}
+    button {margin-top:1rem; padding:0.6rem 1.2rem;}
+  </style>
+</head>
+<body>
+<h1>CI & Jenkins 配置</h1>
+<form id="configForm">
+  <label>项目 Git 地址
+    <input type="url" name="projectUrl" placeholder="https://github.com/your/repo" required />
+  </label>
+  <label>Jenkins URL
+    <input type="url" name="jenkinsUrl" placeholder="https://ci.example.com" required />
+  </label>
+  <label>Jenkins Job 名称
+    <input type="text" name="jenkinsJob" placeholder="pi-mono-build" required />
+  </label>
+  <label>Jenkins Token (API token)
+    <input type="text" name="jenkinsToken" placeholder="TOKEN" required />
+  </label>
+  <label>日志服务器地址
+    <input type="url" name="logServerUrl" placeholder="https://log.example.com" required />
+  </label>
+  <button type="submit">保存配置 &amp; 触发构建</button>
+</form>
+<div id="result"></div>
+<script>
+  // Load existing config on page load
+  fetch('/config')
+    .then(r=>r.json())
+    .then(cfg=>{
+      for(const key in cfg){
+        const input=document.querySelector(`[name="${key}"]`);
+        if(input) input.value=cfg[key];
+      }
+    });
+
+  const form=document.getElementById('configForm');
+  form.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const data={};
+    new FormData(form).forEach((v,k)=>data[k]=v);
+    const res=await fetch('/save', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const msg=await res.text();
+    document.getElementById('result').innerText=msg;
+  });
+</script>
+</body>
+</html>
