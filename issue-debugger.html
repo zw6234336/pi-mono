@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>问题排查调试器</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 2rem;}
+    textarea {width: 100%; height: 150px;}
+    button {padding: 0.5rem 1rem; font-size: 1rem;}
+    pre {background:#f5f5f5; padding:1rem; overflow:auto;}
+  </style>
+</head>
+<body>
+  <h1>问题排查调试器</h1>
+  <p>在下面粘贴您遇到的错误描述或关键字，然后点击“修复”。系统将尝试查询对应服务的路由信息和最近的生产日志。</p>
+  <textarea id="desc" placeholder="例如：myservice 启动失败"></textarea><br>
+  <button id="run">修复</button>
+  <h2>结果</h2>
+  <pre id="output"></pre>
+
+  <script>
+    document.getElementById('run').addEventListener('click', async () => {
+      const desc = document.getElementById('desc').value.trim();
+      if (!desc) { alert('请先输入描述'); return; }
+      // Call the local Node script via a simple HTTP server (provided separately)
+      // For now we just display the command that would be run.
+      const outputEl = document.getElementById('output');
+      outputEl.textContent = `正在执行: node scripts/issue-debugger.js ${JSON.stringify(desc)} ...`;
+      try {
+        const resp = await fetch('http://localhost:3000/debug', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({description: desc})
+        });
+        const text = await resp.text();
+        outputEl.textContent = text;
+      } catch (e) {
+        outputEl.textContent = '请求失败或未启动调试服务器：' + e;
+      }
+    });
+  </script>
+</body>
+</html>
