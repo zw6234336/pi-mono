@@ -25,6 +25,7 @@ import type {
 } from "@mariozechner/pi-agent-core";
 import type { AssistantMessage, ImageContent, Message, Model, TextContent } from "@mariozechner/pi-ai";
 import { isContextOverflow, modelsAreEqual, resetApiProviders, supportsXhigh } from "@mariozechner/pi-ai";
+import { extractAndSaveMemory } from "@mariozechner/pi-memory";
 import { getDocsPath } from "../config.js";
 import { theme } from "../modes/interactive/theme/theme.js";
 import { stripFrontmatter } from "../utils/frontmatter.js";
@@ -40,6 +41,7 @@ import {
 	prepareCompaction,
 	shouldCompact,
 } from "./compaction/index.js";
+import { serializeConversation } from "./compaction/utils.js";
 import { DEFAULT_THINKING_LEVEL } from "./defaults.js";
 import { exportSessionToHtml, type ToolHtmlRenderer } from "./export-html/index.js";
 import { createToolHtmlRenderer } from "./export-html/tool-renderer.js";
@@ -69,6 +71,7 @@ import {
 	wrapRegisteredTools,
 } from "./extensions/index.js";
 import type { BashExecutionMessage, CustomMessage } from "./messages.js";
+import { convertToLlm } from "./messages.js";
 import type { ModelRegistry } from "./model-registry.js";
 import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.js";
 import type { ResourceExtensionPaths, ResourceLoader } from "./resource-loader.js";
@@ -1665,6 +1668,19 @@ export class AgentSession {
 				tokensBefore = extensionCompaction.tokensBefore;
 				details = extensionCompaction.details;
 			} else {
+				// Memory extraction before compaction
+				try {
+					await extractAndSaveMemory(
+						serializeConversation(convertToLlm(preparation.messagesToSummarize)),
+						this.model,
+						apiKey,
+						this._cwd,
+						this._compactionAbortController.signal,
+					);
+				} catch (err) {
+					console.error("Warning: Pre-compaction memory flush failed:", err);
+				}
+
 				// Generate compaction result
 				const result = await compact(
 					preparation,
@@ -1882,6 +1898,19 @@ export class AgentSession {
 				tokensBefore = extensionCompaction.tokensBefore;
 				details = extensionCompaction.details;
 			} else {
+				// Memory extraction before compaction
+				try {
+					await extractAndSaveMemory(
+						serializeConversation(convertToLlm(preparation.messagesToSummarize)),
+						this.model,
+						apiKey,
+						this._cwd,
+						this._autoCompactionAbortController.signal,
+					);
+				} catch (err) {
+					console.error("Warning: Pre-compaction memory flush failed:", err);
+				}
+
 				// Generate compaction result
 				const compactResult = await compact(
 					preparation,
